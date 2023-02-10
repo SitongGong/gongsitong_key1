@@ -1,0 +1,1507 @@
+2023-02-10 19:17:03,060 - mmdet - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.16 (default, Jan 17 2023, 23:13:24) [GCC 11.2.0]
+CUDA available: True
+GPU 0: Tesla V100-SXM2-32GB
+CUDA_HOME: /data/apps/cuda/11.1
+NVCC: Cuda compilation tools, release 11.1, V11.1.105
+GCC: gcc (GCC) 7.3.0
+PyTorch: 1.10.1+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v2.2.3 (Git Hash 7336ca9f055cf1bfa13efb658fe15dc9b41f0740)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -DEDGE_PROFILER_USE_KINETO -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.10.1, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.11.2+cu111
+OpenCV: 4.7.0
+MMCV: 1.7.0
+MMCV Compiler: GCC 7.3
+MMCV CUDA Compiler: 11.1
+MMDetection: 2.28.1+c14dd6c
+------------------------------------------------------------
+
+2023-02-10 19:17:04,215 - mmdet - INFO - Distributed training: False
+2023-02-10 19:17:05,367 - mmdet - INFO - Config:
+checkpoint_config = dict(interval=1)
+log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
+custom_hooks = [dict(type='NumClassCheckHook')]
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = '/data/home/scv9034/run/checkpoints/yolov3_mobilenetv2_mstrain-416_300e_coco_20210718_010823-f68a07b3.pth'
+resume_from = None
+workflow = [('train', 1)]
+opencv_num_threads = 0
+mp_start_method = 'fork'
+auto_scale_lr = dict(enable=False, base_batch_size=192)
+model = dict(
+    type='YOLOV3',
+    backbone=dict(
+        type='MobileNetV2',
+        out_indices=(2, 4, 6),
+        act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
+        init_cfg=dict(
+            type='Pretrained', checkpoint='open-mmlab://mmdet/mobilenet_v2')),
+    neck=dict(
+        type='YOLOV3Neck',
+        num_scales=3,
+        in_channels=[320, 96, 32],
+        out_channels=[96, 96, 96]),
+    bbox_head=dict(
+        type='YOLOV3Head',
+        num_classes=20,
+        in_channels=[96, 96, 96],
+        out_channels=[96, 96, 96],
+        anchor_generator=dict(
+            type='YOLOAnchorGenerator',
+            base_sizes=[[(116, 90), (156, 198), (373, 326)],
+                        [(30, 61), (62, 45), (59, 119)],
+                        [(10, 13), (16, 30), (33, 23)]],
+            strides=[32, 16, 8]),
+        bbox_coder=dict(type='YOLOBBoxCoder'),
+        featmap_strides=[32, 16, 8],
+        loss_cls=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=1.0,
+            reduction='sum'),
+        loss_conf=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=1.0,
+            reduction='sum'),
+        loss_xy=dict(
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+            loss_weight=2.0,
+            reduction='sum'),
+        loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
+    train_cfg=dict(
+        assigner=dict(
+            type='GridAssigner',
+            pos_iou_thr=0.5,
+            neg_iou_thr=0.5,
+            min_pos_iou=0)),
+    test_cfg=dict(
+        nms_pre=1000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        conf_thr=0.005,
+        nms=dict(type='nms', iou_threshold=0.45),
+        max_per_img=100))
+dataset_type = 'CocoDataset'
+data_root = 'data/coco/'
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(
+        type='Expand',
+        mean=[123.675, 116.28, 103.53],
+        to_rgb=True,
+        ratio_range=(1, 2)),
+    dict(
+        type='MinIoURandomCrop',
+        min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+        min_crop_size=0.3),
+    dict(
+        type='Resize',
+        img_scale=[(320, 320), (416, 416)],
+        multiscale_mode='range',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(type='PhotoMetricDistortion'),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(416, 416),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=24,
+    workers_per_gpu=4,
+    train=dict(
+        type='RepeatDataset',
+        times=10,
+        dataset=dict(
+            type='CocoDataset',
+            ann_file='/data/home/scv9034/run/VOCtrainval/VOC_train.json',
+            img_prefix='/data/home/scv9034/run/VOCtrainval/VOC_train/',
+            pipeline=[
+                dict(type='LoadImageFromFile'),
+                dict(type='LoadAnnotations', with_bbox=True),
+                dict(
+                    type='Expand',
+                    mean=[123.675, 116.28, 103.53],
+                    to_rgb=True,
+                    ratio_range=(1, 2)),
+                dict(
+                    type='MinIoURandomCrop',
+                    min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+                    min_crop_size=0.3),
+                dict(
+                    type='Resize',
+                    img_scale=[(320, 320), (416, 416)],
+                    multiscale_mode='range',
+                    keep_ratio=True),
+                dict(type='RandomFlip', flip_ratio=0.5),
+                dict(type='PhotoMetricDistortion'),
+                dict(
+                    type='Normalize',
+                    mean=[123.675, 116.28, 103.53],
+                    std=[58.395, 57.12, 57.375],
+                    to_rgb=True),
+                dict(type='Pad', size_divisor=32),
+                dict(type='DefaultFormatBundle'),
+                dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+            ],
+            classes=('person', 'aeroplane', 'tvmonitor', 'cat', 'chair',
+                     'train', 'boat', 'dog', 'bird', 'bicycle', 'bottle',
+                     'sheep', 'diningtable', 'sofa', 'horse', 'motorbike',
+                     'cow', 'car', 'bus', 'pottedplant'))),
+    val=dict(
+        type='CocoDataset',
+        ann_file='/data/home/scv9034/run/VOCtrainval/VOC_val.json',
+        img_prefix='/data/home/scv9034/run/VOCtrainval/VOC_val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(416, 416),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('person', 'aeroplane', 'tvmonitor', 'cat', 'chair', 'train',
+                 'boat', 'dog', 'bird', 'bicycle', 'bottle', 'sheep',
+                 'diningtable', 'sofa', 'horse', 'motorbike', 'cow', 'car',
+                 'bus', 'pottedplant')),
+    test=dict(
+        type='CocoDataset',
+        ann_file='/data/home/scv9034/run/VOCtrainval/VOC_val.json',
+        img_prefix='/data/home/scv9034/run/VOCtrainval/VOC_val/',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(416, 416),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='Pad', size_divisor=32),
+                    dict(type='DefaultFormatBundle'),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ],
+        classes=('person', 'aeroplane', 'tvmonitor', 'cat', 'chair', 'train',
+                 'boat', 'dog', 'bird', 'bicycle', 'bottle', 'sheep',
+                 'diningtable', 'sofa', 'horse', 'motorbike', 'cow', 'car',
+                 'bus', 'pottedplant')))
+optimizer = dict(type='SGD', lr=0.003, momentum=0.9, weight_decay=0.0005)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=4000,
+    warmup_ratio=0.0001,
+    step=[24, 28])
+runner = dict(type='EpochBasedRunner', max_epochs=30)
+evaluation = dict(interval=1, metric=['bbox'])
+find_unused_parameters = True
+work_dir = 'VOCdataset'
+auto_resume = False
+gpu_ids = [0]
+
+2023-02-10 19:17:05,374 - mmdet - INFO - Set random seed to 852965900, deterministic: False
+2023-02-10 19:17:05,490 - mmdet - INFO - initialize MobileNetV2 with init_cfg {'type': 'Pretrained', 'checkpoint': 'open-mmlab://mmdet/mobilenet_v2'}
+Name of parameter - Initialization information
+
+backbone.conv1.conv.weight - torch.Size([32, 3, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.conv1.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.conv1.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.depthwise_conv.conv.weight - torch.Size([32, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.depthwise_conv.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.depthwise_conv.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.linear_conv.conv.weight - torch.Size([16, 32, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.linear_conv.bn.weight - torch.Size([16]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer1.0.linear_conv.bn.bias - torch.Size([16]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.expand_conv.conv.weight - torch.Size([96, 16, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.expand_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.expand_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.depthwise_conv.conv.weight - torch.Size([96, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.depthwise_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.depthwise_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.linear_conv.conv.weight - torch.Size([24, 96, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.linear_conv.bn.weight - torch.Size([24]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.0.linear_conv.bn.bias - torch.Size([24]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.expand_conv.conv.weight - torch.Size([144, 24, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.expand_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.expand_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.depthwise_conv.conv.weight - torch.Size([144, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.depthwise_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.depthwise_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.linear_conv.conv.weight - torch.Size([24, 144, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.linear_conv.bn.weight - torch.Size([24]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer2.1.linear_conv.bn.bias - torch.Size([24]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.expand_conv.conv.weight - torch.Size([144, 24, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.expand_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.expand_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.depthwise_conv.conv.weight - torch.Size([144, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.depthwise_conv.bn.weight - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.depthwise_conv.bn.bias - torch.Size([144]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.linear_conv.conv.weight - torch.Size([32, 144, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.linear_conv.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.0.linear_conv.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.expand_conv.conv.weight - torch.Size([192, 32, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.expand_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.expand_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.depthwise_conv.conv.weight - torch.Size([192, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.depthwise_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.depthwise_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.linear_conv.conv.weight - torch.Size([32, 192, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.linear_conv.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.1.linear_conv.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.expand_conv.conv.weight - torch.Size([192, 32, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.expand_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.expand_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.depthwise_conv.conv.weight - torch.Size([192, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.depthwise_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.depthwise_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.linear_conv.conv.weight - torch.Size([32, 192, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.linear_conv.bn.weight - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer3.2.linear_conv.bn.bias - torch.Size([32]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.expand_conv.conv.weight - torch.Size([192, 32, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.expand_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.expand_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.depthwise_conv.conv.weight - torch.Size([192, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.depthwise_conv.bn.weight - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.depthwise_conv.bn.bias - torch.Size([192]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.linear_conv.conv.weight - torch.Size([64, 192, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.linear_conv.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.0.linear_conv.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.expand_conv.conv.weight - torch.Size([384, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.expand_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.expand_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.depthwise_conv.conv.weight - torch.Size([384, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.depthwise_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.depthwise_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.linear_conv.conv.weight - torch.Size([64, 384, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.linear_conv.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.1.linear_conv.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.expand_conv.conv.weight - torch.Size([384, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.expand_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.expand_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.depthwise_conv.conv.weight - torch.Size([384, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.depthwise_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.depthwise_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.linear_conv.conv.weight - torch.Size([64, 384, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.linear_conv.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.2.linear_conv.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.expand_conv.conv.weight - torch.Size([384, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.expand_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.expand_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.depthwise_conv.conv.weight - torch.Size([384, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.depthwise_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.depthwise_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.linear_conv.conv.weight - torch.Size([64, 384, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.linear_conv.bn.weight - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer4.3.linear_conv.bn.bias - torch.Size([64]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.expand_conv.conv.weight - torch.Size([384, 64, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.expand_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.expand_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.depthwise_conv.conv.weight - torch.Size([384, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.depthwise_conv.bn.weight - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.depthwise_conv.bn.bias - torch.Size([384]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.linear_conv.conv.weight - torch.Size([96, 384, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.0.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.expand_conv.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.expand_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.expand_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.depthwise_conv.conv.weight - torch.Size([576, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.depthwise_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.depthwise_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.linear_conv.conv.weight - torch.Size([96, 576, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.1.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.expand_conv.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.expand_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.expand_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.depthwise_conv.conv.weight - torch.Size([576, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.depthwise_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.depthwise_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.linear_conv.conv.weight - torch.Size([96, 576, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.linear_conv.bn.weight - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer5.2.linear_conv.bn.bias - torch.Size([96]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.expand_conv.conv.weight - torch.Size([576, 96, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.expand_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.expand_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.depthwise_conv.conv.weight - torch.Size([576, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.depthwise_conv.bn.weight - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.depthwise_conv.bn.bias - torch.Size([576]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.linear_conv.conv.weight - torch.Size([160, 576, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.linear_conv.bn.weight - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.0.linear_conv.bn.bias - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.expand_conv.conv.weight - torch.Size([960, 160, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.expand_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.expand_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.depthwise_conv.conv.weight - torch.Size([960, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.depthwise_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.depthwise_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.linear_conv.conv.weight - torch.Size([160, 960, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.linear_conv.bn.weight - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.1.linear_conv.bn.bias - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.expand_conv.conv.weight - torch.Size([960, 160, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.expand_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.expand_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.depthwise_conv.conv.weight - torch.Size([960, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.depthwise_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.depthwise_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.linear_conv.conv.weight - torch.Size([160, 960, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.linear_conv.bn.weight - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer6.2.linear_conv.bn.bias - torch.Size([160]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.expand_conv.conv.weight - torch.Size([960, 160, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.expand_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.expand_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.depthwise_conv.conv.weight - torch.Size([960, 1, 3, 3]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.depthwise_conv.bn.weight - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.depthwise_conv.bn.bias - torch.Size([960]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.linear_conv.conv.weight - torch.Size([320, 960, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.linear_conv.bn.weight - torch.Size([320]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.layer7.0.linear_conv.bn.bias - torch.Size([320]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.conv2.conv.weight - torch.Size([1280, 320, 1, 1]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.conv2.bn.weight - torch.Size([1280]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+backbone.conv2.bn.bias - torch.Size([1280]): 
+PretrainedInit: load from open-mmlab://mmdet/mobilenet_v2 
+
+neck.detect1.conv1.conv.weight - torch.Size([96, 320, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv1.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv1.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv2.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv2.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv2.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv3.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv3.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv3.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv4.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv4.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv4.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv5.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect1.conv5.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect1.conv5.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.conv1.conv.weight - torch.Size([96, 96, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.conv1.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.conv1.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv1.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv1.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv1.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv2.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv2.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv2.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv3.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv3.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv3.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv4.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv4.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv4.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv5.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect2.conv5.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect2.conv5.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.conv2.conv.weight - torch.Size([96, 96, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.conv2.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.conv2.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv1.conv.weight - torch.Size([96, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv1.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv1.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv2.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv2.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv2.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv3.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv3.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv3.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv4.conv.weight - torch.Size([192, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv4.bn.weight - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv4.bn.bias - torch.Size([192]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv5.conv.weight - torch.Size([96, 192, 1, 1]): 
+Initialized by user-defined `init_weights` in ConvModule  
+
+neck.detect3.conv5.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+neck.detect3.conv5.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.0.conv.weight - torch.Size([96, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.0.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.0.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.1.conv.weight - torch.Size([96, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.1.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.1.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.2.conv.weight - torch.Size([96, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_bridge.2.bn.weight - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_bridge.2.bn.bias - torch.Size([96]): 
+The value is the same before and after calling `init_weights` of YOLOV3  
+
+bbox_head.convs_pred.0.weight - torch.Size([75, 96, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.0.bias - torch.Size([75]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.1.weight - torch.Size([75, 96, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.1.bias - torch.Size([75]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.2.weight - torch.Size([75, 96, 1, 1]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+
+bbox_head.convs_pred.2.bias - torch.Size([75]): 
+Initialized by user-defined `init_weights` in YOLOV3Head  
+2023-02-10 19:17:14,603 - mmdet - INFO - Automatic scaling of learning rate (LR) has been disabled.
+2023-02-10 19:17:14,622 - mmdet - INFO - load checkpoint from local path: /data/home/scv9034/run/checkpoints/yolov3_mobilenetv2_mstrain-416_300e_coco_20210718_010823-f68a07b3.pth
+2023-02-10 19:17:14,718 - mmdet - WARNING - The model and loaded state dict do not match exactly
+
+size mismatch for bbox_head.convs_pred.0.weight: copying a param with shape torch.Size([255, 96, 1, 1]) from checkpoint, the shape in current model is torch.Size([75, 96, 1, 1]).
+size mismatch for bbox_head.convs_pred.0.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([75]).
+size mismatch for bbox_head.convs_pred.1.weight: copying a param with shape torch.Size([255, 96, 1, 1]) from checkpoint, the shape in current model is torch.Size([75, 96, 1, 1]).
+size mismatch for bbox_head.convs_pred.1.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([75]).
+size mismatch for bbox_head.convs_pred.2.weight: copying a param with shape torch.Size([255, 96, 1, 1]) from checkpoint, the shape in current model is torch.Size([75, 96, 1, 1]).
+size mismatch for bbox_head.convs_pred.2.bias: copying a param with shape torch.Size([255]) from checkpoint, the shape in current model is torch.Size([75]).
+2023-02-10 19:17:14,718 - mmdet - INFO - Start running, host: scv9034@g0028, work_dir: /data/run01/scv9034/mmdetection/VOCdataset
+2023-02-10 19:17:14,719 - mmdet - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) StepLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) EvalHook                           
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) NumClassCheckHook                  
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+ -------------------- 
+2023-02-10 19:17:14,719 - mmdet - INFO - workflow: [('train', 1)], max: 30 epochs
+2023-02-10 19:17:14,719 - mmdet - INFO - Checkpoints will be saved to /data/run01/scv9034/mmdetection/VOCdataset by HardDiskBackend.
+2023-02-10 19:17:30,407 - mmdet - INFO - Saving checkpoint at 1 epochs
+2023-02-10 19:17:31,985 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:17:31,985 - mmdet - ERROR - The testing results of the whole dataset is empty.
+2023-02-10 19:17:31,986 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:17:31,986 - mmdet - INFO - Epoch(val) [1][66]	
+2023-02-10 19:17:47,222 - mmdet - INFO - Saving checkpoint at 2 epochs
+2023-02-10 19:17:48,729 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:17:48,730 - mmdet - ERROR - The testing results of the whole dataset is empty.
+2023-02-10 19:17:48,730 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:17:48,730 - mmdet - INFO - Epoch(val) [2][66]	
+2023-02-10 19:18:03,863 - mmdet - INFO - Saving checkpoint at 3 epochs
+2023-02-10 19:18:05,424 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:18:05,535 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.002
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.002
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.002
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.007
+
+2023-02-10 19:18:05,537 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:18:05,538 - mmdet - INFO - Epoch(val) [3][66]	bbox_mAP: 0.0000, bbox_mAP_50: 0.0000, bbox_mAP_75: 0.0000, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0000, bbox_mAP_copypaste: 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000
+2023-02-10 19:18:20,716 - mmdet - INFO - Saving checkpoint at 4 epochs
+2023-02-10 19:18:22,273 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:18:22,424 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.010
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.001
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.012
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.012
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.012
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.034
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.024
+
+2023-02-10 19:18:22,427 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:18:22,427 - mmdet - INFO - Epoch(val) [4][66]	bbox_mAP: 0.0009, bbox_mAP_50: 0.0039, bbox_mAP_75: 0.0001, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0103, bbox_mAP_l: 0.0006, bbox_mAP_copypaste: 0.0009 0.0039 0.0001 0.0000 0.0103 0.0006
+2023-02-10 19:18:37,618 - mmdet - INFO - Saving checkpoint at 5 epochs
+2023-02-10 19:18:39,220 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:18:39,429 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.016
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.003
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.029
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.029
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.029
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.049
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.041
+
+2023-02-10 19:18:39,433 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:18:39,433 - mmdet - INFO - Epoch(val) [5][66]	bbox_mAP: 0.0029, bbox_mAP_50: 0.0081, bbox_mAP_75: 0.0015, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0159, bbox_mAP_l: 0.0034, bbox_mAP_copypaste: 0.0029 0.0081 0.0015 0.0000 0.0159 0.0034
+2023-02-10 19:18:54,651 - mmdet - INFO - Saving checkpoint at 6 epochs
+2023-02-10 19:18:56,264 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:18:56,501 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.010
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.020
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.022
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.015
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.083
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.083
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.083
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.065
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.110
+
+2023-02-10 19:18:56,504 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:18:56,504 - mmdet - INFO - Epoch(val) [6][66]	bbox_mAP: 0.0098, bbox_mAP_50: 0.0201, bbox_mAP_75: 0.0079, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0217, bbox_mAP_l: 0.0150, bbox_mAP_copypaste: 0.0098 0.0201 0.0079 0.0000 0.0217 0.0150
+2023-02-10 19:19:11,650 - mmdet - INFO - Saving checkpoint at 7 epochs
+2023-02-10 19:19:13,262 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:19:13,565 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.011
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.023
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.009
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.021
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.017
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.104
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.104
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.104
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.077
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.130
+
+2023-02-10 19:19:13,570 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:19:13,570 - mmdet - INFO - Epoch(val) [7][66]	bbox_mAP: 0.0110, bbox_mAP_50: 0.0229, bbox_mAP_75: 0.0094, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0205, bbox_mAP_l: 0.0170, bbox_mAP_copypaste: 0.0110 0.0229 0.0094 0.0000 0.0205 0.0170
+2023-02-10 19:19:28,806 - mmdet - INFO - Saving checkpoint at 8 epochs
+2023-02-10 19:19:30,390 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:19:30,605 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.012
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.026
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.011
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.015
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.023
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.100
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.066
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.138
+
+2023-02-10 19:19:30,609 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:19:30,609 - mmdet - INFO - Epoch(val) [8][66]	bbox_mAP: 0.0119, bbox_mAP_50: 0.0258, bbox_mAP_75: 0.0106, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0151, bbox_mAP_l: 0.0233, bbox_mAP_copypaste: 0.0119 0.0258 0.0106 0.0000 0.0151 0.0233
+2023-02-10 19:19:45,751 - mmdet - INFO - Saving checkpoint at 9 epochs
+2023-02-10 19:19:47,368 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:19:47,571 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.011
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.026
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.010
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.017
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.021
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.086
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.086
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.086
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.077
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.124
+
+2023-02-10 19:19:47,575 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:19:47,575 - mmdet - INFO - Epoch(val) [9][66]	bbox_mAP: 0.0115, bbox_mAP_50: 0.0263, bbox_mAP_75: 0.0097, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0172, bbox_mAP_l: 0.0208, bbox_mAP_copypaste: 0.0115 0.0263 0.0097 0.0000 0.0172 0.0208
+2023-02-10 19:20:02,862 - mmdet - INFO - Saving checkpoint at 10 epochs
+2023-02-10 19:20:04,456 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:20:04,668 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.009
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.023
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.014
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.017
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.070
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.070
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.070
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.072
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.102
+
+2023-02-10 19:20:04,671 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:20:04,671 - mmdet - INFO - Epoch(val) [10][66]	bbox_mAP: 0.0086, bbox_mAP_50: 0.0233, bbox_mAP_75: 0.0014, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0140, bbox_mAP_l: 0.0170, bbox_mAP_copypaste: 0.0086 0.0233 0.0014 0.0000 0.0140 0.0170
+2023-02-10 19:20:19,914 - mmdet - INFO - Saving checkpoint at 11 epochs
+2023-02-10 19:20:21,518 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:20:21,785 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.022
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.031
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.018
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.069
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.069
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.069
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.003
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.085
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.099
+
+2023-02-10 19:20:21,789 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:20:21,789 - mmdet - INFO - Epoch(val) [11][66]	bbox_mAP: 0.0084, bbox_mAP_50: 0.0216, bbox_mAP_75: 0.0035, bbox_mAP_s: 0.0010, bbox_mAP_m: 0.0313, bbox_mAP_l: 0.0175, bbox_mAP_copypaste: 0.0084 0.0216 0.0035 0.0010 0.0313 0.0175
+2023-02-10 19:20:36,954 - mmdet - INFO - Saving checkpoint at 12 epochs
+2023-02-10 19:20:38,553 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:20:38,728 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.010
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.022
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.009
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.024
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.018
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.085
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.085
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.085
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.002
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.089
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.105
+
+2023-02-10 19:20:38,731 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:20:38,732 - mmdet - INFO - Epoch(val) [12][66]	bbox_mAP: 0.0104, bbox_mAP_50: 0.0222, bbox_mAP_75: 0.0085, bbox_mAP_s: 0.0007, bbox_mAP_m: 0.0240, bbox_mAP_l: 0.0178, bbox_mAP_copypaste: 0.0104 0.0222 0.0085 0.0007 0.0240 0.0178
+2023-02-10 19:20:53,888 - mmdet - INFO - Saving checkpoint at 13 epochs
+2023-02-10 19:20:55,476 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:20:55,646 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.010
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.024
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.013
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.021
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.076
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.076
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.076
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.002
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.078
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.110
+
+2023-02-10 19:20:55,648 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:20:55,648 - mmdet - INFO - Epoch(val) [13][66]	bbox_mAP: 0.0097, bbox_mAP_50: 0.0236, bbox_mAP_75: 0.0024, bbox_mAP_s: 0.0003, bbox_mAP_m: 0.0130, bbox_mAP_l: 0.0206, bbox_mAP_copypaste: 0.0097 0.0236 0.0024 0.0003 0.0130 0.0206
+2023-02-10 19:21:10,862 - mmdet - INFO - Saving checkpoint at 14 epochs
+2023-02-10 19:21:12,442 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:21:12,606 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.005
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.013
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.005
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.015
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.055
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.055
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.055
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.043
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.086
+
+2023-02-10 19:21:12,609 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:21:12,609 - mmdet - INFO - Epoch(val) [14][66]	bbox_mAP: 0.0052, bbox_mAP_50: 0.0131, bbox_mAP_75: 0.0028, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0048, bbox_mAP_l: 0.0150, bbox_mAP_copypaste: 0.0052 0.0131 0.0028 0.0000 0.0048 0.0150
+2023-02-10 19:21:27,790 - mmdet - INFO - Saving checkpoint at 15 epochs
+2023-02-10 19:21:29,355 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:21:29,512 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.015
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.019
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.059
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.059
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.059
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.047
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.095
+
+2023-02-10 19:21:29,516 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:21:29,516 - mmdet - INFO - Epoch(val) [15][66]	bbox_mAP: 0.0060, bbox_mAP_50: 0.0150, bbox_mAP_75: 0.0032, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0040, bbox_mAP_l: 0.0187, bbox_mAP_copypaste: 0.0060 0.0150 0.0032 0.0000 0.0040 0.0187
+2023-02-10 19:21:44,595 - mmdet - INFO - Saving checkpoint at 16 epochs
+2023-02-10 19:21:46,169 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:21:46,390 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.012
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.022
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.061
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.061
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.061
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.032
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.098
+
+2023-02-10 19:21:46,393 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:21:46,393 - mmdet - INFO - Epoch(val) [16][66]	bbox_mAP: 0.0061, bbox_mAP_50: 0.0122, bbox_mAP_75: 0.0058, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0019, bbox_mAP_l: 0.0218, bbox_mAP_copypaste: 0.0061 0.0122 0.0058 0.0000 0.0019 0.0218
+2023-02-10 19:22:01,605 - mmdet - INFO - Saving checkpoint at 17 epochs
+2023-02-10 19:22:03,167 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:22:03,314 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.012
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.017
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.041
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.041
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.041
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.028
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.073
+
+2023-02-10 19:22:03,316 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:22:03,317 - mmdet - INFO - Epoch(val) [17][66]	bbox_mAP: 0.0057, bbox_mAP_50: 0.0120, bbox_mAP_75: 0.0033, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0038, bbox_mAP_l: 0.0168, bbox_mAP_copypaste: 0.0057 0.0120 0.0033 0.0000 0.0038 0.0168
+2023-02-10 19:22:18,505 - mmdet - INFO - Saving checkpoint at 18 epochs
+2023-02-10 19:22:20,097 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:22:20,237 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.030
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.030
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.030
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.061
+
+2023-02-10 19:22:20,239 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:22:20,239 - mmdet - INFO - Epoch(val) [18][66]	bbox_mAP: 0.0039, bbox_mAP_50: 0.0082, bbox_mAP_75: 0.0019, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0012, bbox_mAP_l: 0.0097, bbox_mAP_copypaste: 0.0039 0.0082 0.0019 0.0000 0.0012 0.0097
+2023-02-10 19:22:35,426 - mmdet - INFO - Saving checkpoint at 19 epochs
+2023-02-10 19:22:37,022 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:22:37,179 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.011
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.015
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.042
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.042
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.042
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.036
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.066
+
+2023-02-10 19:22:37,182 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:22:37,182 - mmdet - INFO - Epoch(val) [19][66]	bbox_mAP: 0.0060, bbox_mAP_50: 0.0110, bbox_mAP_75: 0.0065, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0032, bbox_mAP_l: 0.0149, bbox_mAP_copypaste: 0.0060 0.0110 0.0065 0.0000 0.0032 0.0149
+2023-02-10 19:22:52,530 - mmdet - INFO - Saving checkpoint at 20 epochs
+2023-02-10 19:22:54,186 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:22:54,318 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.007
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.023
+
+2023-02-10 19:22:54,320 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:22:54,320 - mmdet - INFO - Epoch(val) [20][66]	bbox_mAP: 0.0030, bbox_mAP_50: 0.0067, bbox_mAP_75: 0.0025, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0068, bbox_mAP_copypaste: 0.0030 0.0067 0.0025 0.0000 0.0000 0.0068
+2023-02-10 19:23:09,416 - mmdet - INFO - Saving checkpoint at 21 epochs
+2023-02-10 19:23:10,989 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:23:11,126 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.001
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.018
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.018
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.018
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.008
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.035
+
+2023-02-10 19:23:11,129 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:23:11,129 - mmdet - INFO - Epoch(val) [21][66]	bbox_mAP: 0.0029, bbox_mAP_50: 0.0066, bbox_mAP_75: 0.0029, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0013, bbox_mAP_l: 0.0103, bbox_mAP_copypaste: 0.0029 0.0066 0.0029 0.0000 0.0013 0.0103
+2023-02-10 19:23:26,233 - mmdet - INFO - Saving checkpoint at 22 epochs
+2023-02-10 19:23:27,797 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:23:27,999 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.005
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.006
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.019
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.019
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.019
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.019
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.030
+
+2023-02-10 19:23:28,001 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:23:28,001 - mmdet - INFO - Epoch(val) [22][66]	bbox_mAP: 0.0029, bbox_mAP_50: 0.0054, bbox_mAP_75: 0.0023, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0023, bbox_mAP_l: 0.0064, bbox_mAP_copypaste: 0.0029 0.0054 0.0023 0.0000 0.0023 0.0064
+2023-02-10 19:23:43,177 - mmdet - INFO - Saving checkpoint at 23 epochs
+2023-02-10 19:23:44,720 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:23:44,857 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.003
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.017
+
+2023-02-10 19:23:44,860 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:23:44,860 - mmdet - INFO - Epoch(val) [23][66]	bbox_mAP: 0.0015, bbox_mAP_50: 0.0026, bbox_mAP_75: 0.0019, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0028, bbox_mAP_copypaste: 0.0015 0.0026 0.0019 0.0000 0.0000 0.0028
+2023-02-10 19:24:00,002 - mmdet - INFO - Saving checkpoint at 24 epochs
+2023-02-10 19:24:01,575 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:24:01,703 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.017
+
+2023-02-10 19:24:01,705 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:24:01,705 - mmdet - INFO - Epoch(val) [24][66]	bbox_mAP: 0.0017, bbox_mAP_50: 0.0070, bbox_mAP_75: 0.0000, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0046, bbox_mAP_copypaste: 0.0017 0.0070 0.0000 0.0000 0.0000 0.0046
+2023-02-10 19:24:16,775 - mmdet - INFO - Saving checkpoint at 25 epochs
+2023-02-10 19:24:18,319 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:24:18,445 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.006
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.010
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.018
+
+2023-02-10 19:24:18,446 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:24:18,447 - mmdet - INFO - Epoch(val) [25][66]	bbox_mAP: 0.0029, bbox_mAP_50: 0.0065, bbox_mAP_75: 0.0037, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0057, bbox_mAP_copypaste: 0.0029 0.0065 0.0037 0.0000 0.0000 0.0057
+2023-02-10 19:24:33,719 - mmdet - INFO - Saving checkpoint at 26 epochs
+2023-02-10 19:24:35,291 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:24:35,418 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.009
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.015
+
+2023-02-10 19:24:35,420 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:24:35,420 - mmdet - INFO - Epoch(val) [26][66]	bbox_mAP: 0.0032, bbox_mAP_50: 0.0065, bbox_mAP_75: 0.0037, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0053, bbox_mAP_copypaste: 0.0032 0.0065 0.0037 0.0000 0.0000 0.0053
+2023-02-10 19:24:50,501 - mmdet - INFO - Saving checkpoint at 27 epochs
+2023-02-10 19:24:52,086 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:24:52,214 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.006
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.019
+
+2023-02-10 19:24:52,217 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:24:52,217 - mmdet - INFO - Epoch(val) [27][66]	bbox_mAP: 0.0036, bbox_mAP_50: 0.0066, bbox_mAP_75: 0.0037, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0064, bbox_mAP_copypaste: 0.0036 0.0066 0.0037 0.0000 0.0000 0.0064
+2023-02-10 19:25:07,295 - mmdet - INFO - Saving checkpoint at 28 epochs
+2023-02-10 19:25:08,849 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:25:08,975 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.007
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.004
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.007
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.013
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.013
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.013
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.024
+
+2023-02-10 19:25:08,977 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:25:08,977 - mmdet - INFO - Epoch(val) [28][66]	bbox_mAP: 0.0035, bbox_mAP_50: 0.0071, bbox_mAP_75: 0.0037, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0072, bbox_mAP_copypaste: 0.0035 0.0071 0.0037 0.0000 0.0000 0.0072
+2023-02-10 19:25:24,279 - mmdet - INFO - Saving checkpoint at 29 epochs
+2023-02-10 19:25:25,848 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:25:26,050 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.005
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.014
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.025
+
+2023-02-10 19:25:26,053 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:25:26,053 - mmdet - INFO - Epoch(val) [29][66]	bbox_mAP: 0.0024, bbox_mAP_50: 0.0054, bbox_mAP_75: 0.0019, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0054, bbox_mAP_copypaste: 0.0024 0.0054 0.0019 0.0000 0.0000 0.0054
+2023-02-10 19:25:41,206 - mmdet - INFO - Saving checkpoint at 30 epochs
+2023-02-10 19:25:42,847 - mmdet - INFO - Evaluating bbox...
+2023-02-10 19:25:42,986 - mmdet - INFO - 
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=1000 ] = 0.006
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=1000 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=300 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=1000 ] = 0.011
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=1000 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=1000 ] = 0.019
+
+2023-02-10 19:25:42,989 - mmdet - INFO - Exp name: yolov3_mobilenetv2_VOC.py
+2023-02-10 19:25:42,989 - mmdet - INFO - Epoch(val) [30][66]	bbox_mAP: 0.0028, bbox_mAP_50: 0.0056, bbox_mAP_75: 0.0025, bbox_mAP_s: 0.0000, bbox_mAP_m: 0.0000, bbox_mAP_l: 0.0054, bbox_mAP_copypaste: 0.0028 0.0056 0.0025 0.0000 0.0000 0.0054
